@@ -1,3 +1,44 @@
-build:
-  docker:
-    web: Dockerfile
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Triggers the workflow on push events to the main branch
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # Replace with your project's Node version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test  # Ensure you have tests set up in your project
+
+      - name: Build the project
+        run: npm run build
+
+      - name: Deploy to Server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+            cd /path/to/deployment/directory &&
+            git pull origin main &&
+            npm install &&
+            npm run build
+          "
