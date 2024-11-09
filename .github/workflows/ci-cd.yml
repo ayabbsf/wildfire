@@ -1,44 +1,54 @@
-name: CI/CD Pipeline
+name: CI/CD pipeline
 
 on:
   push:
     branches:
-      - main  # Triggers the workflow on push events to the main branch
-  pull_request:
-    branches:
       - main
 
 jobs:
+  # Build Job
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: [14.x, 16.x]  # Updated to explicitly use Node.js 20
+          node-version: 18.x
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test  # Ensure you have tests set up in your project
-
-      - name: Build the project
-        run: npm run build
-
-      - name: Deploy to Server
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_KEY: ${{ secrets.SSH_KEY }}
+      - name: Install Dependencies
         run: |
-          ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
-            cd /path/to/deployment/directory &&
-            git pull origin main &&
-            npm install &&
-            npm run build
-          "
+          cd widfire
+          npm install
+
+      - name: Build Project
+        run: |
+          cd todo
+          npm run build
+
+      - name: Upload artifact to enable deployment
+        uses: actions/upload-artifact@v3
+        with:
+          name: poduction file
+          path: ./wildfire/build
+
+  # Deploy Job
+  deploy:
+   
+    needs: build
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: poduction file
+          path: ./wildfire/build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.KEY }} #this is the key of the access token
+          publish_dir: ./wildfire/build
