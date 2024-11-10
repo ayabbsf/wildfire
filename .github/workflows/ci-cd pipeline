@@ -1,17 +1,45 @@
-name: ci-cd 
+name: CI/CD Pipeline
 
-on: push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  super-lint:
-    name: Lint code base
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Check out the repository
         uses: actions/checkout@v2
 
-      - name: Run ci-cd 
-        uses: github/super-linter@v4
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest  # or another test framework you're using
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Deploy to Production
+        run: |
+          # Add deployment steps here (e.g., pushing to a server, cloud provider, etc.)
+          echo "Deploying to production"
