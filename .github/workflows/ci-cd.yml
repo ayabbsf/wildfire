@@ -9,7 +9,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run Super-Linter
+      - name: Run ci-cd pipeline
         uses: github/super-linter@v4
         env:
           DEFAULT_BRANCH: main
