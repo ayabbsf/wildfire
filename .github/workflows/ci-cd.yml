@@ -1,54 +1,16 @@
-name: CI/CD pipeline
-
-on:
-  push:
-    branches:
-      - main
+name: ci-cd pipeline
+on: push
 
 jobs:
-  # Build Job
-  build:
+  super-lint:
+    name: Lint code base
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Install Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-
-      - name: Install Dependencies
-        run: |
-          cd widfire
-          npm install
-
-      - name: Build Project
-        run: |
-          cd todo
-          npm run build
-
-      - name: Upload artifact to enable deployment
-        uses: actions/upload-artifact@v3
-        with:
-          name: poduction file
-          path: ./wildfire/build
-
-  # Deploy Job
-  deploy:
-   
-    needs: build
-    
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: poduction file
-          path: ./wildfire/build
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.KEY }} #this is the key of the access token
-          publish_dir: ./wildfire/build
+      - name: Run Super-Linter
+        uses: github/super-linter@v4
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
