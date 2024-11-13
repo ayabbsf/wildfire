@@ -18,17 +18,20 @@ jobs:
         with:
           dotnet-version: '9.x'
 
+      - name: List directory contents
+        run: ls -R # Lists all files to verify the correct path to .csproj
+
       - name: Build with dotnet
-        run: dotnet build wildfire/wildfire.csproj --configuration Release
+        run: dotnet build ./wildfire/wildfire.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish wildfire/wildfire.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish ./wildfire/wildfire.csproj -c Release -o ${{github.workspace}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{github.workspace}}/myapp
 
   deploy:
     runs-on: ubuntu-latest
@@ -58,4 +61,4 @@ jobs:
         with:
           app-name: 'wildfire'
           slot-name: 'Production'
-          package: ${{env.DOTNET_ROOT}}/myapp
+          package: ${{github.workspace}}/myapp
